@@ -1,37 +1,34 @@
-# ================================
-#  Stage 1: Build the application
-# ================================
+# Stage 1: Build the app
 FROM eclipse-temurin:21-jdk AS builder
 
 WORKDIR /app
 
-# Copy Maven wrapper and config
+# Install dos2unix (needed because Jenkins clones on Windows)
+RUN apt-get update && apt-get install -y dos2unix
+
+# Copy Maven wrapper
 COPY mvnw .
+COPY mvnw.cmd .
 COPY .mvn/ .mvn/
 
-# Copy pom.xml first (layer caching)
+# Fix Windows → Linux line endings
+RUN dos2unix mvnw && chmod +x mvnw
+
+# Copy project files
 COPY pom.xml .
-
-# Pre-download dependencies (optional but speeds up builds)
-RUN chmod +x mvnw && ./mvnw dependency:go-offline
-
-# Copy source code
 COPY src ./src
 
-# Build the application
+# Download dependencies
+RUN ./mvnw dependency:go-offline
+
+# Build application
 RUN ./mvnw clean package -DskipTests
 
-
-# ================================
-#  Stage 2: Run the application
-# ================================
+# Stage 2: Run the app
 FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
-
-# Copy built JAR from builder stage
 COPY --from=builder /app/target/*.jar app.jar
 
 EXPOSE 8081
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
