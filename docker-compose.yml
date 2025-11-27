@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: bloodbank_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: bloodbank_db
+      MYSQL_ROOT_PASSWORD: Manoj@2006
+    ports:
+      - "3308:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - homeservice-net
+
+  backend:
+    image: sowrimanoj/bloodbank-backend:latest   # ✅ From Docker Hub
+    container_name: bloodbank_backend
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"
+    networks:
+      - homeservice-net
+
+  frontend:
+    image: sowrimanoj/bloodbank-frontend:latest  # ✅ From Docker Hub
+    container_name: bloodbank_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"     # Frontend runs on port 3000 in local browser
+    networks:
+      - homeservice-net
+
+volumes:
+  db_data:
+
+networks:
+  homeservice-net:
+    driver: bridge
