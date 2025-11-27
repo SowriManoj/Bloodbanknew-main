@@ -2,12 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/SowriManoj/BloodBankSystem.git'
-            }
-        }
 
         stage('Build Backend Image') {
             steps {
