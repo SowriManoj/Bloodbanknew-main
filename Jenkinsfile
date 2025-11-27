@@ -3,15 +3,22 @@ pipeline {
 
     stages {
 
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/SowriManoj/Bloodbanknew-main.git'
+            }
+        }
+
         stage('Build Backend Image') {
             steps {
-                sh 'docker build -t sowrimanoj/bloodbank-backend ./backend'
+                bat 'docker build -t sowrimanoj/bloodbank-backend ./backend'
             }
         }
 
         stage('Build Frontend Image') {
             steps {
-                sh 'docker build -t sowrimanoj/bloodbank-frontend ./lifeline-link-22-main'
+                bat 'docker build -t sowrimanoj/bloodbank-frontend ./lifeline-link-22-main'
             }
         }
 
@@ -20,16 +27,16 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
                                                  usernameVariable: 'USER',
                                                  passwordVariable: 'PASS')]) {
-                    sh 'docker login -u $USER -p $PASS'
-                    sh 'docker push sowrimanoj/bloodbank-backend'
-                    sh 'docker push sowrimanoj/bloodbank-frontend'
+                    bat 'docker login -u %USER% -p %PASS%'
+                    bat 'docker push sowrimanoj/bloodbank-backend'
+                    bat 'docker push sowrimanoj/bloodbank-frontend'
                 }
             }
         }
 
         stage('Deploy using Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/'
+                bat 'kubectl apply -f k8s/'
             }
         }
     }
